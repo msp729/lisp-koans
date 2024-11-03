@@ -13,56 +13,56 @@
 ;;; limitations under the License.
 
 (define-test if
-  ;; IF only evaluates and returns one branch of a conditional expression.
-  (assert-equal ____ (if t :true :false))
-  (assert-equal ____ (if nil :true :false))
-  ;; This also applies to side effects that might or might not be evaluated.
-  (let ((result))
-    (if t
-        (setf result :true)
-        (setf result :false))
-    (assert-equal ____ result)
-    (if nil
-        (setf result :true)
-        (setf result :false))
-    (assert-equal ____ result)))
+    ;; IF only evaluates and returns one branch of a conditional expression.
+    (assert-equal ____ (if t :true :false))
+    (assert-equal ____ (if nil :true :false))
+    ;; This also applies to side effects that might or might not be evaluated.
+    (let ((result))
+        (if t
+                (setf result :true)
+                (setf result :false))
+        (assert-equal ____ result)
+        (if nil
+                (setf result :true)
+                (setf result :false))
+        (assert-equal ____ result)))
 
 (define-test when-unless
-  ;; WHEN and UNLESS are like one-branched IF statements.
-  (let ((when-result nil)
-        (when-numbers '())
-        (unless-result nil)
-        (unless-numbers '()))
-    (dolist (x '(1 2 3 4 5 6 7 8 9 10))
-      (when (> x 5)
-        (setf when-result x)
-        (push x when-numbers))
-      (unless (> x 5)
-        (setf unless-result x)
-        (push x unless-numbers)))
-    (assert-equal ____ when-result)
-    (assert-equal ____ when-numbers)
-    (assert-equal ____ unless-result)
-    (assert-equal ____ unless-numbers)))
+    ;; WHEN and UNLESS are like one-branched IF statements.
+    (let ((when-result nil)
+                (when-numbers '())
+                (unless-result nil)
+                (unless-numbers '()))
+        (dolist (x '(1 2 3 4 5 6 7 8 9 10))
+            (when (> x 5)
+                (setf when-result x)
+                (push x when-numbers))
+            (unless (> x 5)
+                (setf unless-result x)
+                (push x unless-numbers)))
+        (assert-equal ____ when-result)
+        (assert-equal ____ when-numbers)
+        (assert-equal ____ unless-result)
+        (assert-equal ____ unless-numbers)))
 
 (define-test and-short-circuit
-  ;; AND only evaluates forms until one evaluates to NIL.
-  (assert-equal ____
-                (let ((x 0))
-                  (and
-                   (setf x (+ 2 x))
-                   (setf x (+ 3 x))
-                   nil
-                   (setf x (+ 4 x)))
-                  x)))
+    ;; AND only evaluates forms until one evaluates to NIL.
+    (assert-equal ____
+                                (let ((x 0))
+                                    (and
+                                     (setf x (+ 2 x))
+                                     (setf x (+ 3 x))
+                                     nil
+                                     (setf x (+ 4 x)))
+                                    x)))
 
 (define-test or-short-circuit
-  ;; OR only evaluates forms until one evaluates to non-NIL.
-  (assert-equal ____
-                (let ((x 0))
-                  (or
-                   (setf x (+ 2 x))
-                   (setf x (+ 3 x))
-                   nil
-                   (setf x (+ 4 x)))
-                  x)))
+    ;; OR only evaluates forms until one evaluates to non-NIL.
+    (assert-equal ____
+                                (let ((x 0))
+                                    (or
+                                     (setf x (+ 2 x))
+                                     (setf x (+ 3 x))
+                                     nil
+                                     (setf x (+ 4 x)))
+                                    x)))

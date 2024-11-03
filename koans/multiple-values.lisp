@@ -16,26 +16,26 @@
 ;;; This is distinct from returning a list or structure of values.
 
 (define-test multiple-values
-  (let ((x (floor 3/2))
-        ;; The macro MULTIPLE-VALUE-LIST returns a list of all values returned
-        ;; by a Lisp form.
-        (y (multiple-value-list (floor 3/2))))
-    (assert-equal x 1)
-    (assert-equal y '(1 1/2)))
-  (assert-equal ____ (multiple-value-list (floor 99/4))))
+    (let ((x (floor 3/2))
+                ;; The macro MULTIPLE-VALUE-LIST returns a list of all values returned
+                ;; by a Lisp form.
+                (y (multiple-value-list (floor 3/2))))
+        (assert-equal x 1)
+        (assert-equal y '(1 1/2)))
+    (assert-equal ____ (multiple-value-list (floor 99/4))))
 
 (defun next-fib (a b)
-  ;; The function VALUES allows returning multiple values.
-  (values b (+ a b)))
+    ;; The function VALUES allows returning multiple values.
+    (values b (+ a b)))
 
 (define-test binding-and-setting-multiple-values
-  ;; The macro MULTIPLE-VALUE-BIND is like LET, except it binds the variables
-  ;; listed in its first argument to the values returned by the form that is its
-  ;; second argument.
-  (multiple-value-bind (x y) (next-fib 3 5)
-    (let ((result (* x y)))
-      (assert-equal ____ result)))
-  ;; SETF can also set multiple values if a VALUES form is provided as a place.
-  (let (x y)
-    (setf (values x y) (next-fib 5 8))
-    (assert-equal ____ (list x y))))
+    ;; The macro MULTIPLE-VALUE-BIND is like LET, except it binds the variables
+    ;; listed in its first argument to the values returned by the form that is its
+    ;; second argument.
+    (multiple-value-bind (x y) (next-fib 3 5)
+        (let ((result (* x y)))
+            (assert-equal ____ result)))
+    ;; SETF can also set multiple values if a VALUES form is provided as a place.
+    (let (x y)
+        (setf (values x y) (next-fib 5 8))
+        (assert-equal ____ (list x y))))

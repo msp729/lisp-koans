@@ -18,41 +18,41 @@
 ;;; place of the original macro call and is then evaluated.
 
 (defmacro my-and (&rest forms)
-  ;; We use a LABELS local function to allow for recursive expansion.
-  (labels ((generate (forms)
-             (cond ((null forms) 'nil)
-                   ((null (rest forms)) (first forms))
-                   (t `(when ,(first forms)
-                         ,(generate (rest forms)))))))
-    (generate forms)))
+    ;; We use a LABELS local function to allow for recursive expansion.
+    (labels ((generate (forms)
+                         (cond ((null forms) 'nil)
+                                     ((null (rest forms)) (first forms))
+                                     (t `(when ,(first forms)
+                                                 ,(generate (rest forms)))))))
+        (generate forms)))
 
 (define-test my-and
-  ;; ASSERT-EXPANDS macroexpands the first form once and checks if it is equal
-  ;; to the second form.
-  (assert-expands (my-and (= 0 (random 6)) (error "Bang!"))
-                  '(when (= 0 (random 6)) (error "Bang!")))
-  (assert-expands (my-and (= 0 (random 6))
-                          (= 0 (random 6))
-                          (= 0 (random 6))
-                          (error "Bang!"))
-                  ____))
+    ;; ASSERT-EXPANDS macroexpands the first form once and checks if it is equal
+    ;; to the second form.
+    (assert-expands (my-and (= 0 (random 6)) (error "Bang!"))
+                                    '(when (= 0 (random 6)) (error "Bang!")))
+    (assert-expands (my-and (= 0 (random 6))
+                                                    (= 0 (random 6))
+                                                    (= 0 (random 6))
+                                                    (error "Bang!"))
+                                    ____))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; A common macro pitfall is capturing a variable defined by the user.
 
 (define-test variable-capture
-  (macrolet ((for ((var start stop) &body body)
-               `(do ((,var ,start (1+ ,var))
-                     (limit ,stop))
-                    ((> ,var limit))
-                  ,@body)))
-    (let ((limit 10)
-          (result '()))
-      (for (i 0 3)
-           (push i result)
-           (assert-equal ____ limit))
-      (assert-equal ____ (nreverse result)))))
+    (macrolet ((for ((var start stop) &body body)
+                             `(do ((,var ,start (1+ ,var))
+                                         (limit ,stop))
+                                        ((> ,var limit))
+                                    ,@body)))
+        (let ((limit 10)
+                    (result '()))
+            (for (i 0 3)
+                     (push i result)
+                     (assert-equal ____ limit))
+            (assert-equal ____ (nreverse result)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -60,20 +60,20 @@
 ;;; meant to be evaluated once.
 
 (define-test multiple-evaluation
-  ;; We use MACROLET for defining a local macro.
-  (macrolet ((for ((var start stop) &body body)
-               `(do ((,var ,start (1+ ,var)))
-                    ((> ,var ,stop))
-                  ,@body)))
-    (let ((side-effects '())
-          (result '()))
-      ;; Our functions RETURN-0 and RETURN-3 have side effects.
-      (flet ((return-0 () (push 0 side-effects) 0)
-             (return-3 () (push 3 side-effects) 3))
-        (for (i (return-0) (return-3))
-          (push i result)))
-      (assert-equal ____ (nreverse result))
-      (assert-equal ____ (nreverse side-effects)))))
+    ;; We use MACROLET for defining a local macro.
+    (macrolet ((for ((var start stop) &body body)
+                             `(do ((,var ,start (1+ ,var)))
+                                        ((> ,var ,stop))
+                                    ,@body)))
+        (let ((side-effects '())
+                    (result '()))
+            ;; Our functions RETURN-0 and RETURN-3 have side effects.
+            (flet ((return-0 () (push 0 side-effects) 0)
+                         (return-3 () (push 3 side-effects) 3))
+                (for (i (return-0) (return-3))
+                    (push i result)))
+            (assert-equal ____ (nreverse result))
+            (assert-equal ____ (nreverse side-effects)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -81,36 +81,36 @@
 ;;; subforms.
 
 (define-test wrong-evaluation-order
-  (macrolet ((for ((var start stop) &body body)
-               ;; The function GENSYM creates GENerated SYMbols, guaranteed to
-               ;; be unique in the whole Lisp system. Because of that, they
-               ;; cannot capture other symbols, preventing variable capture.
-               (let ((limit (gensym "LIMIT")))
-                 `(do ((,limit ,stop)
-                       (,var ,start (1+ ,var)))
-                      ((> ,var ,limit))
-                    ,@body))))
-    (let ((side-effects '())
-          (result '()))
-      (flet ((return-0 () (push 0 side-effects) 0)
-             (return-3 () (push 3 side-effects) 3))
-        (for (i (return-0) (return-3))
-          (push i result)))
-      (assert-equal ____ (nreverse result))
-      (assert-equal ____ (nreverse side-effects)))))
+    (macrolet ((for ((var start stop) &body body)
+                             ;; The function GENSYM creates GENerated SYMbols, guaranteed to
+                             ;; be unique in the whole Lisp system. Because of that, they
+                             ;; cannot capture other symbols, preventing variable capture.
+                             (let ((limit (gensym "LIMIT")))
+                                 `(do ((,limit ,stop)
+                                             (,var ,start (1+ ,var)))
+                                            ((> ,var ,limit))
+                                        ,@body))))
+        (let ((side-effects '())
+                    (result '()))
+            (flet ((return-0 () (push 0 side-effects) 0)
+                         (return-3 () (push 3 side-effects) 3))
+                (for (i (return-0) (return-3))
+                    (push i result)))
+            (assert-equal ____ (nreverse result))
+            (assert-equal ____ (nreverse side-effects)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-test for
-  (macrolet ((for ((var start stop) &body body)
-               ;; Fill in the blank with a correct FOR macroexpansion that is
-               ;; not affected by the three macro pitfalls mentioned above.
-               ____))
-    (let ((side-effects '())
-          (result '()))
-      (flet ((return-0 () (push 0 side-effects) 0)
-             (return-3 () (push 3 side-effects) 3))
-        (for (i (return-0) (return-3))
-          (push i result)))
-      (assert-equal '(0 1 2 3) (nreverse result))
-      (assert-equal '(0 3) (nreverse side-effects)))))
+    (macrolet ((for ((var start stop) &body body)
+                             ;; Fill in the blank with a correct FOR macroexpansion that is
+                             ;; not affected by the three macro pitfalls mentioned above.
+                             ____))
+        (let ((side-effects '())
+                    (result '()))
+            (flet ((return-0 () (push 0 side-effects) 0)
+                         (return-3 () (push 3 side-effects) 3))
+                (for (i (return-0) (return-3))
+                    (push i result)))
+            (assert-equal '(0 1 2 3) (nreverse result))
+            (assert-equal '(0 3) (nreverse side-effects)))))
