@@ -21,9 +21,9 @@
     ;; We use a LABELS local function to allow for recursive expansion.
     (labels ((generate (forms)
                          (cond ((null forms) 'nil)
-                                     ((null (rest forms)) (first forms))
-                                     (t `(when ,(first forms)
-                                                 ,(generate (rest forms)))))))
+                               ((null (rest forms)) (first forms))
+                               (t `(when ,(first forms)
+                                         ,(generate (rest forms)))))))
         (generate forms)))
 
 (define-test my-and
@@ -35,7 +35,10 @@
                                                     (= 0 (random 6))
                                                     (= 0 (random 6))
                                                     (error "Bang!"))
-                                    ____))
+                                    '(when (= 0 (random 6))
+                                       (when (= 0 (random 6))
+                                         (when (= 0 (random 6))
+                                           (error "Bang!"))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -51,8 +54,8 @@
                     (result '()))
             (for (i 0 3)
                      (push i result)
-                     (assert-equal ____ limit))
-            (assert-equal ____ (nreverse result)))))
+                     (assert-equal 3 limit))
+            (assert-equal '(0 1 2 3) (nreverse result)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -72,8 +75,8 @@
                          (return-3 () (push 3 side-effects) 3))
                 (for (i (return-0) (return-3))
                     (push i result)))
-            (assert-equal ____ (nreverse result))
-            (assert-equal ____ (nreverse side-effects)))))
+            (assert-equal '(0 1 2 3) (nreverse result))
+            (assert-equal '(0 3 3 3 3 3) (nreverse side-effects)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -86,8 +89,7 @@
                              ;; be unique in the whole Lisp system. Because of that, they
                              ;; cannot capture other symbols, preventing variable capture.
                              (let ((limit (gensym "LIMIT")))
-                                 `(do ((,limit ,stop)
-                                             (,var ,start (1+ ,var)))
+                                 `(do ((,var ,start (1+ ,var)) (,limit ,stop))
                                             ((> ,var ,limit))
                                         ,@body))))
         (let ((side-effects '())
@@ -96,8 +98,8 @@
                          (return-3 () (push 3 side-effects) 3))
                 (for (i (return-0) (return-3))
                     (push i result)))
-            (assert-equal ____ (nreverse result))
-            (assert-equal ____ (nreverse side-effects)))))
+            (assert-equal '(0 1 2 3) (nreverse result))
+            (assert-equal '(0 3) (nreverse side-effects)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -105,7 +107,13 @@
     (macrolet ((for ((var start stop) &body body)
                              ;; Fill in the blank with a correct FOR macroexpansion that is
                              ;; not affected by the three macro pitfalls mentioned above.
-                             ____))
+                             (let ((init (gensym "INIT")) (term (gensym "TERM")))
+                               `(let ((,init ,start) (,term ,stop))
+                                 (do (
+                                     (,var ,init (1+ ,var)))
+                                    ((> ,var ,term))
+                                    ,@body
+                                  )))))
         (let ((side-effects '())
                     (result '()))
             (flet ((return-0 () (push 0 side-effects) 0)

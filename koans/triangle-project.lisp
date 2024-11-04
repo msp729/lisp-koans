@@ -14,11 +14,24 @@
 
 (define-condition triangle-error (error)
     ;; Fill in the blank with a suitable slot definition.
-    (____))
+    ((sides :reader triangle-error-sides :initarg :sides)))
 
 (defun triangle (a b c)
     ;; Fill in the blank with a function that satisfies the below tests.
-    ____)
+    (loop for s in (list a b c)
+          collect (unless
+            (typep s '(real (0)))
+            (signal (make-condition 'type-error :datum s :expected-type '(real (0)))))
+          )
+
+    (unless (every (lambda (x) (< x 0)) (mapcar #'- (list a b c) (list b c a) (list c a b)))
+          (signal (make-condition 'triangle-error :sides (list a b c))))
+
+    (cond
+      ((= a b c) :equilateral)
+      ((or (= a b) (= a c) (= b c)) :isosceles)
+      (t :scalene)
+      ))
 
 (define-test equilateral-triangles
     ;; Equilateral triangles have three sides of equal length,

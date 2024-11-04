@@ -50,7 +50,13 @@
 ;;; Your goal is to write the scoring function for Greed.
 
 (defun score (&rest dice)
-    ____)
+    (let ((counts (loop for i from 1 to 6 collect (count-if (lambda (x) (= i x)) dice))))
+      (+ (* 1000 (floor (/ (first counts) 3)))
+         (* 100 (mod (first counts) 3))
+         (* 500 (floor (/ (fifth counts) 3)))
+         (* 50 (mod (fifth counts) 3))
+         (loop for i in '(1 2 3 5) sum (* (+ 1 i) 100 (floor (/ (nth i counts) 3))))
+        )))
 
 (define-test score-of-an-empty-list-is-zero
     (assert-equal 0 (score)))
